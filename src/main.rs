@@ -37,7 +37,10 @@ fn main() {
         }
     };
 
-    let buf = frame.data_mut(&mut state).expect("Unable to access buffer");
+    let buf = frame
+        .data_mut(&mut state)
+        .expect("Unable to access buffer")
+        .to_vec();
     let format = frame.format();
     let img: DynamicImage = match format {
         Format::Rgba8888 => {
@@ -47,16 +50,16 @@ fn main() {
         }
         Format::Xrgb8888 => {
             // Convert into RGBA8888
-            let buffer = buf.as_bgra();
-            let good: Vec<u8> = buffer
+            let buf: Vec<u8> = buf
+                // .as_argb()
+                .as_bgra()
                 .iter()
                 .cloned()
                 .map(Into::<Rgba<u8>>::into)
                 .map(|p| p.as_slice().to_vec())
                 .flatten()
                 .collect();
-            let img: RgbaImage =
-                ImageBuffer::from_raw(frame.width(), frame.height(), good).unwrap();
+            let img: RgbaImage = ImageBuffer::from_raw(frame.width(), frame.height(), buf).unwrap();
             img.into()
         }
         _ => {
